@@ -1,8 +1,6 @@
 package com.example.schedule.service;
 
-import com.example.schedule.dto.CreateScheduleRequestDto;
-import com.example.schedule.dto.CreateScheduleResponseDto;
-import com.example.schedule.dto.GetScheduleResponseDto;
+import com.example.schedule.dto.*;
 import com.example.schedule.entity.Schedule;
 import com.example.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
@@ -72,5 +70,25 @@ public class ScheduleService {
             );
         }
         return dtos;
+    }
+    @Transactional
+    public UpdateScheduleResponseDto update(Long scheduleId, UpdateScheduleRequestDto requestDto) {
+        Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
+                ()-> new IllegalStateException("없는 일정입니다.")
+        );
+        if(schedule.getPassword().equals(requestDto.getPassword())) {
+            schedule.update(requestDto.getTitle(),
+                    requestDto.getAuthor());
+            return new UpdateScheduleResponseDto(
+                    schedule.getId(),
+                    schedule.getTitle(),
+                    schedule.getAuthor(),
+                    schedule.getContent(),
+                    schedule.getCreatedAt(),
+                    schedule.getUpdatedAt()
+            );
+        } else{
+            throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
+        }
     }
 }

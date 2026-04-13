@@ -79,7 +79,6 @@
 {
   "title" : "일정 제목",
   "author" : "작성자명",
-  "content" : "일정 내용",
   "password" : "비밀번호"
 }
 ```
