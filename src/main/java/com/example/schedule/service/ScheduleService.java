@@ -6,6 +6,7 @@ import com.example.schedule.dto.GetScheduleResponseDto;
 import com.example.schedule.entity.Schedule;
 import com.example.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,8 +51,14 @@ public class ScheduleService {
         );
     }
     @Transactional(readOnly = true)
-    public List<GetScheduleResponseDto> findAll() {
-        List<Schedule> schedules  = scheduleRepository.findAll();
+    public List<GetScheduleResponseDto> findAll(String author) {
+        List<Schedule> schedules;
+        Sort sort = Sort.by(Sort.Direction.DESC,"updatedAt");
+        if(author ==null){
+            schedules  = scheduleRepository.findAll(sort);
+        }else {
+            schedules = scheduleRepository.findByAuthor(author,sort);
+        }
         List<GetScheduleResponseDto> dtos = new ArrayList<>();
         for (Schedule schedule : schedules) {
             dtos.add(
