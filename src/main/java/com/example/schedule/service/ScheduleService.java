@@ -91,4 +91,15 @@ public class ScheduleService {
             throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
         }
     }
+    @Transactional
+    public void delete(Long scheduleId, DeleteScheduleRequestDto requestDto) {
+        Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
+                ()-> new IllegalStateException("없는 일정입니다.")
+        );
+        if(schedule.getPassword().equals(requestDto.getPassword())){
+            scheduleRepository.deleteById(scheduleId);
+        }else {
+            throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
+        }
+    }
 }

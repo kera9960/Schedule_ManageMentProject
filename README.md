@@ -99,5 +99,11 @@
 - Method : DELETE
 - URL : /schedules/{scheduleId}
 - Path Variable : scheduleId 
+#### Request
+```json
+{
+  "password": "비밀번호"
+}
+```
 
 #### Response (204 No Content)
