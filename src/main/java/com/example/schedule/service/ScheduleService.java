@@ -1,7 +1,9 @@
 package com.example.schedule.service;
 
 import com.example.schedule.dto.*;
+import com.example.schedule.entity.Comment;
 import com.example.schedule.entity.Schedule;
+import com.example.schedule.repository.CommentRepository;
 import com.example.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -15,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public CreateScheduleResponseDto save(CreateScheduleRequestDto requestDto) {
@@ -40,16 +43,30 @@ public class ScheduleService {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
                 ()-> new IllegalStateException("없는 일정입니다.")
         );
+        List<Comment> comments = commentRepository.findAllByScheduleId(scheduleId);
+        List<GetCommentResponseDto> commentDtos = new ArrayList<>();
+        for(Comment comment : comments){
+            commentDtos.add(new GetCommentResponseDto(
+                    comment.getId(),
+                    comment.getContent(),
+                    comment.getAuthor(),
+                    comment.getCreatedAt(),
+                    comment.getUpdatedAt()
+                )
+            );
+        }
+
         return new GetScheduleResponseDto(
                 schedule.getId(),
                 schedule.getContent(),
                 schedule.getAuthor(),
                 schedule.getCreatedAt(),
-                schedule.getUpdatedAt()
+                schedule.getUpdatedAt(),
+                commentDtos
         );
     }
     @Transactional(readOnly = true)
-    public List<GetScheduleResponseDto> findAll(String author) {
+    public List<GetScheduleListResponseDto> findAll(String author) {
         List<Schedule> schedules;
         Sort sort = Sort.by(Sort.Direction.DESC,"updatedAt");
         if(author ==null){
@@ -57,10 +74,10 @@ public class ScheduleService {
         }else {
             schedules = scheduleRepository.findByAuthor(author,sort);
         }
-        List<GetScheduleResponseDto> dtos = new ArrayList<>();
+        List<GetScheduleListResponseDto> dtos = new ArrayList<>();
         for (Schedule schedule : schedules) {
             dtos.add(
-                    new GetScheduleResponseDto(
+                    new GetScheduleListResponseDto(
                             schedule.getId(),
                             schedule.getContent(),
                             schedule.getAuthor(),
