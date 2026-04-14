@@ -7,8 +7,10 @@ import com.example.schedule.repository.CommentRepository;
 import com.example.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +21,42 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final CommentRepository commentRepository;
 
+    private void checkBlank(String value,String message){
+        if (value==null||value.isBlank()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,message);
+        }
+    }
+
+    private void checkLength(String value,int maxLength,String message){
+        if (value.length() > maxLength){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,message);
+        }
+    }
+
+    private void validateCreateSchedule(CreateScheduleRequestDto requestDto){
+        checkBlank(requestDto.getTitle(),"제목은 필수입니다.");
+        checkBlank(requestDto.getContent(),"내용은 필수입니다.");
+        checkBlank(requestDto.getAuthor(),"작성자명은 필수입니다.");
+        checkBlank(requestDto.getPassword(),"비밀번호는 필수입니다.");
+        checkLength(requestDto.getTitle(),30,"제목은 30자 이내로 작성해야합니다.");
+        checkLength(requestDto.getContent(),200,"내용은 200자 이내로 작성해야합니다.");
+    }
+
+    private void validateUpdateSchedule(UpdateScheduleRequestDto requestDto){
+        if (requestDto.getTitle()!=null){
+            checkBlank(requestDto.getTitle(),"제목은 공백으로 쓸 수 없습니다.");
+            checkLength(requestDto.getTitle(),30,"제목은 30자 이내로 작성해야합니다.");
+        }
+        if (requestDto.getAuthor()!=null){
+            checkBlank(requestDto.getAuthor(),"작성자명은 공백으로 쓸 수 없습니다.");
+        }
+        checkBlank(requestDto.getPassword(),"비밀번호는 필수입니다.");
+    }
+
+
     @Transactional
     public CreateScheduleResponseDto save(CreateScheduleRequestDto requestDto) {
+        validateCreateSchedule(requestDto);
         Schedule schedule = new Schedule(
                 requestDto.getTitle(),
                 requestDto.getContent(),
@@ -90,6 +126,7 @@ public class ScheduleService {
     }
     @Transactional
     public UpdateScheduleResponseDto update(Long scheduleId, UpdateScheduleRequestDto requestDto) {
+        validateUpdateSchedule(requestDto);
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
                 ()-> new IllegalStateException("없는 일정입니다.")
         );
